@@ -18,6 +18,7 @@ fi
 payload=`cat`
 bucket=$(echo "$payload" | jq -r '.source.bucket')
 path=$(echo "$payload" | jq -r '.source.path // ""')
+path_prefix=$(echo "$payload" | jq -r '.source.path_prefix // ""')
 options=$(echo "$payload" | jq -r '.source.options // [] | join(" ")')
 
 # export for `aws` cli
@@ -33,6 +34,10 @@ fi
 
 # Export AWS_DEFAULT_REGION if set
 [ -n "$AWS_DEFAULT_REGION" ] && export AWS_DEFAULT_REGION
+
+if [ -n "$path_prefix" ]; then
+    path="${path_prefix}/${BUILD_TEAM_NAME}/${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}/${BUILD_ID}"
+fi
 
 echo "Downloading from S3..."
 eval aws s3 sync "s3://$bucket/$path" $dest $options
